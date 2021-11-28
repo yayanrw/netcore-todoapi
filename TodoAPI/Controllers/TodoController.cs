@@ -49,8 +49,7 @@ namespace TodoAPI.Controllers
                 {
                     return new JsonResult(new
                     {
-                        status = true,
-                        data = data,
+                        status = false,
                         messages = "Data not found"
                     });
                 } 
@@ -127,7 +126,7 @@ namespace TodoAPI.Controllers
                 {
                     return new JsonResult(new
                     {
-                        status = true,
+                        status = false,
                         messages = "Data not found"
                     });
                 }
@@ -162,7 +161,7 @@ namespace TodoAPI.Controllers
                 {
                     return new JsonResult(new
                     {
-                        status = true,
+                        status = false,
                         messages = "Data not found"
                     });
                 }                
