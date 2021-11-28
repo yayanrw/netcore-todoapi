@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using TodoAPI.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -8,11 +9,17 @@ namespace TodoAPI.Controllers
     [ApiController]
     public class TodoController : ControllerBase
     {
-        // GET: api/<TodoController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private MsglowBelajarContext _msglowBelajarContext;
+
+        public TodoController(MsglowBelajarContext msglowBelajarContext)
         {
-            return new string[] { "value1", "value2" };
+            _msglowBelajarContext = msglowBelajarContext;
+        }
+
+        [HttpGet]
+        public ActionResult<IEnumerable<TodoModel>> Get()
+        {
+            return _msglowBelajarContext.Todos.ToList();
         }
 
         // GET api/<TodoController>/5
@@ -38,6 +45,11 @@ namespace TodoAPI.Controllers
         [HttpDelete("{id}")]
         public void Delete(int id)
         {
+        }
+
+        ~TodoController ()
+        {
+            _msglowBelajarContext.Dispose();
         }
     }
 }
