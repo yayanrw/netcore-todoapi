@@ -12,9 +12,9 @@ namespace TodoAPI.Controllers
     {
         private MsglowBelajarContext _db;
 
-        public TodoController(MsglowBelajarContext db)
+        public TodoController(MsglowBelajarContext msglowBelajarContext)
         {
-            _db = db;
+            _db = msglowBelajarContext;
         }
 
         [HttpGet]
@@ -31,10 +31,10 @@ namespace TodoAPI.Controllers
             }
             catch (Exception ex)
             {
-                return new JsonResult(new { 
+                return new JsonResult(new
+                {
                     status = false,
-                    messages = "Failed",
-                    data = ex.Message.ToString()
+                    messages = ex.Message.ToString()
                 });
             }
         }
@@ -69,7 +69,6 @@ namespace TodoAPI.Controllers
                 return new JsonResult(new
                 {
                     status = false,
-                    code = ex.HResult,
                     messages = ex.Message.ToString()
                 });
             }
@@ -82,6 +81,7 @@ namespace TodoAPI.Controllers
             {
                 todoModel.pid = Guid.NewGuid().ToString();
                 todoModel.created_at = DateTime.Now;
+                todoModel.created_by = "Anon";
                 _db.Todos.Add(todoModel);
                 await _db.SaveChangesAsync();
                 return new JsonResult(new
@@ -96,7 +96,6 @@ namespace TodoAPI.Controllers
                 return new JsonResult(new
                 {
                     status = false,
-                    code = ex.HResult,
                     messages = ex.Message.ToString()
                 });
             }
@@ -104,9 +103,43 @@ namespace TodoAPI.Controllers
         }
 
         [HttpPut]
-        public void Put([FromBody] TodoModel todoModel)
+        public async Task<ActionResult<TodoModel>> Put([FromBody] TodoModel todoModel)
         {
+            try
+            {
+                var data = await _db.Todos.FirstOrDefaultAsync(x => x.pid == todoModel.pid);
+                if (data != null)
+                {
+                    data.title = todoModel.title;
+                    data.description = todoModel.description;
+                    data.date = todoModel.date;
+                    data.updated_at = DateTime.Now;
+                    data.updated_by = "Anon";
 
+                    await _db.SaveChangesAsync();
+                    return new JsonResult(new
+                    {
+                        status = true,
+                        messages = "Updated Successfully"
+                    });
+                }
+                else
+                {
+                    return new JsonResult(new
+                    {
+                        status = true,
+                        messages = "Data not found"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new
+                {
+                    status = false,
+                    messages = ex.Message.ToString()
+                });
+            }
         }
 
         [HttpDelete("{id}")]
@@ -139,7 +172,6 @@ namespace TodoAPI.Controllers
                 return new JsonResult(new
                 {
                     status = false,
-                    code = ex.HResult,
                     messages = ex.Message.ToString()
                 });
             }
