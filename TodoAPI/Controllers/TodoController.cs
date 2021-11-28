@@ -9,24 +9,58 @@ namespace TodoAPI.Controllers
     [ApiController]
     public class TodoController : ControllerBase
     {
-        private MsglowBelajarContext _msglowBelajarContext;
+        private MsglowBelajarContext _db;
 
-        public TodoController(MsglowBelajarContext msglowBelajarContext)
+        public TodoController(MsglowBelajarContext db)
         {
-            _msglowBelajarContext = msglowBelajarContext;
+            _db = db;
         }
 
         [HttpGet]
-        public ActionResult<IEnumerable<TodoModel>> Get()
+        public JsonResult Get()
         {
-            return _msglowBelajarContext.Todos.ToList();
+            try
+            {
+                var data = _db.Todos.ToList();
+                return new JsonResult(new { 
+                    status = true, 
+                    messages = "Success", 
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new { 
+                    status = false,
+                    messages = "Failed",
+                    data = ex.Message.ToString()
+                });
+            }
         }
 
         // GET api/<TodoController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public JsonResult Get(String pid)
         {
-            return "value";
+            try
+            {
+                var data = _db.Todos.Where(x => x.pid == pid).FirstOrDefault();
+                return new JsonResult(new
+                {
+                    status = true,
+                    data = data,
+                    messages = "Success"
+                });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new
+                {
+                    status = false,
+                    code = ex.HResult,
+                    messages = ex.Message.ToString()
+                });
+            }
         }
 
         // POST api/<TodoController>
@@ -43,13 +77,45 @@ namespace TodoAPI.Controllers
 
         // DELETE api/<TodoController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public JsonResult Delete(String pid)
         {
+            try
+            {
+                var data = _db.Todos.Where(x => x.pid == pid).FirstOrDefault();
+
+                if (data != null)
+                {
+                    _db.Todos.Remove(data);
+                    _db.SaveChanges();
+                    return new JsonResult(new
+                    {
+                        status = true,
+                        messages = "Deleted Successfully"
+                    });
+                }
+                else
+                {
+                    return new JsonResult(new
+                    {
+                        status = true,
+                        messages = "Data not found"
+                    });
+                }                
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new
+                {
+                    status = false,
+                    code = ex.HResult,
+                    messages = ex.Message.ToString()
+                });
+            }
         }
 
         ~TodoController ()
         {
-            _msglowBelajarContext.Dispose();
+            _db.Dispose();
         }
     }
 }
