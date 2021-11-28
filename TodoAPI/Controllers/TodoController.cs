@@ -76,15 +76,37 @@ namespace TodoAPI.Controllers
         }
 
         [HttpPost]
-        public async void Post([FromBody] TodoModel todoModel)
+        public async Task<ActionResult<TodoModel>> Post([FromBody] TodoModel todoModel)
         {
-            _db.Todos.Add(todoModel);
-            await _db.SaveChangesAsync();
+            try
+            {
+                todoModel.pid = Guid.NewGuid().ToString();
+                todoModel.created_at = DateTime.Now;
+                _db.Todos.Add(todoModel);
+                await _db.SaveChangesAsync();
+                return new JsonResult(new
+                {
+                    status = true,
+                    data = todoModel,
+                    messages = "Inserted Successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(new
+                {
+                    status = false,
+                    code = ex.HResult,
+                    messages = ex.Message.ToString()
+                });
+            }
+
         }
 
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut]
+        public void Put([FromBody] TodoModel todoModel)
         {
+
         }
 
         [HttpDelete("{id}")]
@@ -93,7 +115,6 @@ namespace TodoAPI.Controllers
             try
             {
                 var data = await _db.Todos.FirstOrDefaultAsync(x => x.pid == pid);
-
                 if (data != null)
                 {
                     _db.Todos.Remove(data);
