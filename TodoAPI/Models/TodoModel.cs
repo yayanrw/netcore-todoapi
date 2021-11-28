@@ -7,7 +7,7 @@ namespace TodoAPI.Models
     public class TodoModel
     {
         [Key]
-        public Guid pid { get; set; }
+        public String pid { get; set; }
         public String? title { get; set; }
         public String? description { get; set; }
         public DateTime? date { get; set; }
