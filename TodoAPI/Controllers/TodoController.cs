@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TodoAPI.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace TodoAPI.Controllers
 {
-    [Route("api/todo")]
+    [Route("api/[controller]")]
     [ApiController]
     public class TodoController : ControllerBase
     {
@@ -17,11 +18,11 @@ namespace TodoAPI.Controllers
         }
 
         [HttpGet]
-        public JsonResult Get()
+        public async Task<ActionResult<TodoModel>> Get()
         {
             try
             {
-                var data = _db.Todos.ToList();
+                var data = await _db.Todos.ToListAsync();
                 return new JsonResult(new { 
                     status = true, 
                     messages = "Success", 
@@ -38,19 +39,30 @@ namespace TodoAPI.Controllers
             }
         }
 
-        // GET api/<TodoController>/5
         [HttpGet("{id}")]
-        public JsonResult Get(String pid)
+        public async Task<ActionResult<TodoModel>> Get(String pid)
         {
             try
             {
-                var data = _db.Todos.Where(x => x.pid == pid).FirstOrDefault();
-                return new JsonResult(new
+                var data = await _db.Todos.FirstOrDefaultAsync(x => x.pid == pid);
+                if (data == null)
                 {
-                    status = true,
-                    data = data,
-                    messages = "Success"
-                });
+                    return new JsonResult(new
+                    {
+                        status = true,
+                        data = data,
+                        messages = "Data not found"
+                    });
+                } 
+                else
+                {
+                    return new JsonResult(new
+                    {
+                        status = true,
+                        data = data,
+                        messages = "Success"
+                    });
+                }
             }
             catch (Exception ex)
             {
@@ -63,30 +75,29 @@ namespace TodoAPI.Controllers
             }
         }
 
-        // POST api/<TodoController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async void Post([FromBody] TodoModel todoModel)
         {
+            _db.Todos.Add(todoModel);
+            await _db.SaveChangesAsync();
         }
 
-        // PUT api/<TodoController>/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {
         }
 
-        // DELETE api/<TodoController>/5
         [HttpDelete("{id}")]
-        public JsonResult Delete(String pid)
+        public async Task<ActionResult<TodoModel>> Delete(String pid)
         {
             try
             {
-                var data = _db.Todos.Where(x => x.pid == pid).FirstOrDefault();
+                var data = await _db.Todos.FirstOrDefaultAsync(x => x.pid == pid);
 
                 if (data != null)
                 {
                     _db.Todos.Remove(data);
-                    _db.SaveChanges();
+                    await _db.SaveChangesAsync();
                     return new JsonResult(new
                     {
                         status = true,
