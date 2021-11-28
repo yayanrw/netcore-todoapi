@@ -9,7 +9,7 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+   
 string connString = builder.Configuration.GetConnectionString("MsglowBelajar");
 builder.Services.AddDbContext<MsglowBelajarContext>(options =>
 options.UseMySql(connString, new MySqlServerVersion(new Version(10, 1, 40))));
